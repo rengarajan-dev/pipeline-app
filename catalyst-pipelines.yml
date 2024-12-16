@@ -1,0 +1,31 @@
+version: 1
+runners:
+  builder:
+    config-id: 2
+images:
+  node18:
+    image: node:18
+    auth:
+      username: <<env.DOCKER_HUB_USERNAME>>
+      password: <<env.DOCKER_HUB_PASSWORD>>
+jobs:
+  build-job:
+    runner: builder
+    image: node18
+    steps:
+      - >-
+        apt-get update && apt-get install -y zip unzip && rm -rf
+        /var/lib/apt/lists/*
+      - npm install
+      - npm run build
+      - zip -r build.zip build
+    artifacts:
+      upload:
+        - type: file
+          name: build.zip
+          file: build.zip
+          location: stratus://build-artifacts/react-app/
+stages:
+  - name: build-stage
+    jobs:
+      - build-job
